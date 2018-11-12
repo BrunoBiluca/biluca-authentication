@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Authentication.Application.Users.Commands.CreateUser;
 using Authentication.Application.Users.DTOs;
 using Authentication.Application.Users.Helpers;
 using Authentication.Domain.Entities;
@@ -16,17 +17,7 @@ namespace Authentication.WebApi.Controllers
         public IActionResult GetAll()
         {
             var users = Context.Users.ToList()
-            .Select(user =>
-            {
-                return new UserDTO()
-                {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    UserName = user.UserName,
-                    Email = user.Email,
-                };
-            });
+            .Select(user => UserBean.Projection(user));
             return Ok(users);
         }
 
@@ -35,45 +26,14 @@ namespace Authentication.WebApi.Controllers
         {
             var user = await Context.Users.FindAsync(id);
 
-            var userResponse = new UserDTO()
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                UserName = user.UserName,
-                Email = user.Email,
-            };
+            var userResponse = UserBean.Projection(user);
             return Ok(user);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] UserDTO user)
+        public async Task<IActionResult> Post([FromBody] CreateUserCommand request)
         {
-            var salt = UserUtils.GetSalt();
-
-            var encryptedPassword = UserUtils.GenerateSecurePassword(user.Password, salt);
-
-            var userEntity = new User()
-            {
-                UserName = user.UserName,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Salt = salt,
-                EncryptedPassword = encryptedPassword
-            };
-            Context.Users.Add(userEntity);
-            await Context.SaveChangesAsync();
-
-            var userResponse = new UserDTO()
-            {
-                Id = userEntity.Id,
-                FirstName = userEntity.FirstName,
-                LastName = userEntity.LastName,
-                UserName = userEntity.UserName,
-                Email = userEntity.Email,
-            };
-            return StatusCode(201, userResponse);
+            return StatusCode(201, await Mediator.Send(request));
         }
 
         [HttpPut("{id}")]
@@ -92,14 +52,7 @@ namespace Authentication.WebApi.Controllers
             userDb.LastName = user.LastName;
             await Context.SaveChangesAsync();
 
-            var userResponse = new UserDTO()
-            {
-                Id = userDb.Id,
-                FirstName = userDb.FirstName,
-                LastName = userDb.LastName,
-                UserName = userDb.UserName,
-                Email = userDb.Email,
-            };
+            var userResponse = UserBean.Projection(userDb);
             return Ok(userResponse);
         }
 
