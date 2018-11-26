@@ -10,9 +10,9 @@ namespace Authentication.Application.Users.Commands.CreateUser
 {
     public class CreateUserHandler : IRequestHandler<CreateUserCommand, UserDTO>
     {
-        private readonly AuthenticationDbContext context;
+        private readonly IAuthenticationDbContext context;
 
-        public CreateUserHandler(AuthenticationDbContext context)
+        public CreateUserHandler(IAuthenticationDbContext context)
         {
             this.context = context;
         }

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Authentication.Persistence
 {
-    public class AuthenticationDbContext : DbContext
+    public class AuthenticationDbContext : DbContext, IAuthenticationDbContext
     {
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options) : base(options) { }
 
